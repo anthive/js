@@ -1,7 +1,7 @@
 var http = require('http');
 var url = require('url');
 
-const actions = ["stay","move","eat","load","unload"]
+const actions = ["stay","move","eat","take","put"]
 const directions = ["up","down","right","left"]
 
 http.createServer(function(req, res) {
