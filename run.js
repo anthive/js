@@ -17,7 +17,7 @@ http.createServer(function(req, res) {
     if (req.method === 'POST') {
 
         // prepare response json object
-        let response ={"orders":[]}
+        let response = { "orders": [] }
 
         // reading request body with information about map and ants
         let body = '';
@@ -66,3 +66,4 @@ http.createServer(function(req, res) {
 // curl -X 'POST' -d @payload.json http://localhost:7070
 
 // have fun!
+
