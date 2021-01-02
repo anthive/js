@@ -5,15 +5,15 @@ var url = require('url');
 const actions = ["stay","move","eat","take","put"]
 const directions = ["up","down","right","left"]
 
-// starting listen for http calls on port :7070
+// listen for http calls on port :7070
 http.createServer(function(req, res) {
 
-    // your bot respons should be json object
+    // your bot response should be json object
     res.writeHead(200, {
         'Content-Type': 'application/json'
     });
 
-    // sim will make http post request to your bot
+    // sim will make http post request to your bot each tick
     if (req.method === 'POST') {
 
         // prepare response json object
@@ -55,6 +55,7 @@ http.createServer(function(req, res) {
             //	 {"antId":1,"act":"move","dir":"down"},
             //	 {"antId":17,"act":"move","dir":"up"}
             //	]}
+            
         });
     } else {
         res.end("only POST allowed");
