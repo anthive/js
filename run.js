@@ -1,70 +1,70 @@
-var http = require('http');
-var url = require('url');
+const http = require('http');
 
-// available actions and directions
-const actions = ["stay","move","eat","take","put"]
-const directions = ["up","down","right","left"]
+const PORT = 7070;
+const actions = ['stay', 'move', 'eat', 'take', 'put'];
+const directions = ['up', 'down', 'right', 'left'];
 
-// listen for http calls on port :7070
-http.createServer(function(req, res) {
+/**
+ * This is just an example.
+ * For example, we give random orders to ants.
+ * Your bot will have to be more complex and change the strategy
+ * based on the information on the map (payload.canvas).
+ * Payload example https://github.com/anthive/js/blob/master/payload.json
+ * Return should look something like this.
+ *  { orders: [
+ *    { antId: 1, act: 'move', dir: 'down' },
+ *    { antId: 17, act: 'move', dir: 'up' },
+ *  ]}
+ *  More information https://anthive.io/rules/
+ */
+const strategy = (payload) => {
+  const orders = [];
 
-    // your bot response should be json object
-    res.writeHead(200, {
-        'Content-Type': 'application/json'
-    });
+  for (const ant of payload.ants) {
+    const randomNumber = Math.floor(Math.random() * 3);
+    const randomDirections = directions[randomNumber];
 
-    // sim will make http post request to your bot each tick
-    if (req.method === 'POST') {
+    const order = {
+      antId: ant.id,
+      act: 'move',
+      dir: randomDirections,
+    };
+    orders.push(order);
+  }
 
-        // prepare response json object
-        let response = { "orders": [] }
+  return { orders };
+};
 
-        // reading request body with information about map and ants
-        let body = '';
-        req.on('data', chunk => {
-            body += chunk.toString();
-        });
-        req.on('end', () => {
+/**
+ * Creating a bot server.
+ * Sim will make http post request to your bot each tick.
+ */
+const server = http.createServer((req, res) => {
+  if (req.method !== 'POST') {
+    res.end('only POST allowed');
+    return;
+  }
 
-            // parce json from request body
-            let request = JSON.parse(body)
-            
-            // loop through ants and give orders
-            for (let i in request.ants) {
+  let body = '';
 
-                // pick random direction from array on line 6
-                let random_number = Math.floor(Math.random() * 3);
-                let random_directions = directions[random_number]
-              
-                // create order object (move to random direction)
-                let order = {
-                    "antId": request.ants[i].id,
-                    "act": "move",
-                    "dir": random_directions
-                }
+  // Reading request body with information about map and ants
+  req.on('data', (chunk) => {
+    body += chunk.toString();
+  });
 
-                // add order to your response object from line 20
-                response.orders.push(order)
-            }
+  // Apply the strategy and send the result
+  req.on('end', () => {
+    const payload = JSON.parse(body);
+    const response = JSON.stringify(strategy(payload));
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(response);
+  });
+});
 
-            // finish your response and send back json to 
-            res.end(JSON.stringify(response));
+server.listen(PORT);
 
-            // response json should look something like this
-            // {"orders": [
-            //	 {"antId":1,"act":"move","dir":"down"},
-            //	 {"antId":17,"act":"move","dir":"up"}
-            //	]}
-            
-        });
-    } else {
-        res.end("only POST allowed");
-    }
-}).listen(7070);
-
-// this code available at https://github.com/anthive/js
-// to test it localy, submit post request with payload.json using postman or curl
-// curl -X 'POST' -d @payload.json http://localhost:7070
-
-// have fun!
-
+/**
+ * This code available at https://github.com/anthive/js
+ * to test it localy, submit post request with payload.json using postman or curl
+ * curl -X 'POST' -d @payload.json http://localhost:7070
+ */
